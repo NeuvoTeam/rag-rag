@@ -1,5 +1,16 @@
 import React, { useState } from 'react';
-import { Search, Sun, Moon, Bookmark, Globe, ChevronDown, TrendingUp } from 'lucide-react';
+import {
+  Search,
+  Sun,
+  Moon,
+  Bookmark,
+  Globe,
+  ChevronDown,
+  TrendingUp,
+  Briefcase,
+  Bell,
+  LayoutGrid
+} from 'lucide-react';
 import { AssetClass } from '../types/market';
 
 interface HeaderProps {
@@ -12,6 +23,10 @@ interface HeaderProps {
   watchlistCount: number;
   selectedRegion: string;
   setSelectedRegion: (region: string) => void;
+  onOpenPortfolio: () => void;
+  onOpenAlerts: () => void;
+  netEquity: number;
+  alertCount: number;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -24,6 +39,10 @@ export const Header: React.FC<HeaderProps> = ({
   watchlistCount,
   selectedRegion,
   setSelectedRegion,
+  onOpenPortfolio,
+  onOpenAlerts,
+  netEquity,
+  alertCount,
 }) => {
   const [showRegionMenu, setShowRegionMenu] = useState(false);
 
@@ -35,29 +54,28 @@ export const Header: React.FC<HeaderProps> = ({
   ];
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-[#2a2e39] dark:border-[#2a2e39] bg-white dark:bg-[#131722] text-[#131722] dark:text-[#d1d4dc] transition-colors">
-      {/* Top 3-Zone Bar */}
+    <header className="sticky top-0 z-40 w-full border-b border-[#2a2e39] bg-white dark:bg-[#131722] text-[#131722] dark:text-[#d1d4dc] transition-colors">
       <div className="max-w-[1720px] mx-auto px-4 lg:px-6 h-14 flex items-center justify-between gap-6">
-        {/* Zone 1: Brand Wordmark */}
+        {/* Zone 1: Wordmark & Pro Badges */}
         <div className="flex items-center gap-3 shrink-0">
           <button
             onClick={() => setActiveTab('overview')}
-            className="flex items-center gap-2.5 group focus:outline-none"
+            className="flex items-center gap-2.5 group focus:outline-none cursor-pointer"
           >
             <div className="w-8 h-8 rounded-lg bg-[#2962ff] flex items-center justify-center text-white shadow-sm shadow-[#2962ff]/30">
               <TrendingUp className="w-5 h-5 stroke-[2.5]" />
             </div>
             <span className="text-lg font-bold tracking-tight text-slate-900 dark:text-white whitespace-nowrap">
-              TradingView <span className="text-xs font-semibold px-1.5 py-0.5 rounded bg-blue-50 dark:bg-[#2962ff]/20 text-[#2962ff] ml-1">MARKETS</span>
+              TradingView <span className="text-xs font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-[#089981]/20 text-[#089981] ml-1">PRO</span>
             </span>
           </button>
         </div>
 
         {/* Zone 2: Navigation Links */}
-        <nav className="hidden lg:flex items-center gap-7 text-sm font-medium text-slate-600 dark:text-[#868993]">
+        <nav className="hidden lg:flex items-center gap-6 text-sm font-medium text-slate-600 dark:text-[#868993]">
           <button
             onClick={() => setActiveTab('overview')}
-            className={`whitespace-nowrap transition-colors hover:text-slate-900 dark:hover:text-white ${
+            className={`whitespace-nowrap transition-colors hover:text-slate-900 dark:hover:text-white cursor-pointer ${
               activeTab === 'overview' ? 'text-[#2962ff] dark:text-[#2962ff] font-semibold' : ''
             }`}
           >
@@ -65,15 +83,23 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
           <button
             onClick={() => setActiveTab('stocks')}
-            className={`whitespace-nowrap transition-colors hover:text-slate-900 dark:hover:text-white ${
+            className={`whitespace-nowrap transition-colors hover:text-slate-900 dark:hover:text-white cursor-pointer ${
               activeTab === 'stocks' ? 'text-[#2962ff] dark:text-[#2962ff] font-semibold' : ''
             }`}
           >
             Supercharts
           </button>
           <button
+            onClick={() => setActiveTab('multichart')}
+            className={`whitespace-nowrap transition-colors hover:text-slate-900 dark:hover:text-white cursor-pointer flex items-center gap-1.5 ${
+              activeTab === 'multichart' ? 'text-[#2962ff] dark:text-[#2962ff] font-semibold' : ''
+            }`}
+          >
+            <LayoutGrid className="w-3.5 h-3.5" /> Multi-Chart
+          </button>
+          <button
             onClick={() => setActiveTab('heatmap')}
-            className={`whitespace-nowrap transition-colors hover:text-slate-900 dark:hover:text-white ${
+            className={`whitespace-nowrap transition-colors hover:text-slate-900 dark:hover:text-white cursor-pointer ${
               activeTab === 'heatmap' ? 'text-[#2962ff] dark:text-[#2962ff] font-semibold' : ''
             }`}
           >
@@ -81,42 +107,68 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
           <button
             onClick={() => setActiveTab('crypto')}
-            className={`whitespace-nowrap transition-colors hover:text-slate-900 dark:hover:text-white ${
+            className={`whitespace-nowrap transition-colors hover:text-slate-900 dark:hover:text-white cursor-pointer ${
               activeTab === 'crypto' ? 'text-[#2962ff] dark:text-[#2962ff] font-semibold' : ''
             }`}
           >
-            Crypto Screener
+            Crypto Radar
           </button>
           <button
             onClick={() => setActiveTab('forex')}
-            className={`whitespace-nowrap transition-colors hover:text-slate-900 dark:hover:text-white ${
+            className={`whitespace-nowrap transition-colors hover:text-slate-900 dark:hover:text-white cursor-pointer ${
               activeTab === 'forex' ? 'text-[#2962ff] dark:text-[#2962ff] font-semibold' : ''
             }`}
           >
-            Forex Crosses
+            Forex Matrix
           </button>
         </nav>
 
-        {/* Zone 3: Functional Actions */}
-        <div className="flex items-center gap-2.5 shrink-0">
-          {/* Quick Search Button */}
+        {/* Zone 3: Pro Functional Actions */}
+        <div className="flex items-center gap-2 shrink-0">
+          {/* Quick Search */}
           <button
             onClick={onOpenSearch}
             className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-slate-600 dark:text-[#868993] bg-slate-100 dark:bg-[#1e222d] hover:bg-slate-200 dark:hover:bg-[#2a2e39] border border-slate-200 dark:border-[#2a2e39] rounded-lg transition-colors cursor-pointer"
-            title="Search tickers and markets"
+            title="Search markets (⌘K)"
           >
             <Search className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Search markets</span>
+            <span className="hidden sm:inline">Search</span>
             <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-[10px] font-mono bg-white dark:bg-[#131722] border border-slate-300 dark:border-[#363a45] rounded text-slate-500 dark:text-[#787b86]">
               ⌘K
             </kbd>
+          </button>
+
+          {/* Paper Trading Portfolio Balance */}
+          <button
+            onClick={onOpenPortfolio}
+            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-emerald-50 dark:bg-[#089981]/15 text-[#089981] border border-emerald-500/20 rounded-lg hover:bg-emerald-100 dark:hover:bg-[#089981]/25 transition-colors cursor-pointer"
+            title="View Paper Trading Portfolio"
+          >
+            <Briefcase className="w-3.5 h-3.5" />
+            <span className="font-mono tabular-nums">
+              ${netEquity.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+            </span>
+          </button>
+
+          {/* Price Alerts */}
+          <button
+            onClick={onOpenAlerts}
+            className="relative p-2 text-slate-600 dark:text-[#868993] hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-[#1e222d] hover:bg-slate-200 dark:hover:bg-[#2a2e39] border border-slate-200 dark:border-[#2a2e39] rounded-lg transition-colors cursor-pointer"
+            title="Manage Price Alerts"
+          >
+            <Bell className="w-4 h-4" />
+            {alertCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#f23645] text-white text-[9px] font-mono flex items-center justify-center font-bold">
+                {alertCount}
+              </span>
+            )}
           </button>
 
           {/* Region Switcher */}
           <div className="relative">
             <button
               onClick={() => setShowRegionMenu(!showRegionMenu)}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-slate-700 dark:text-[#d1d4dc] bg-slate-100 dark:bg-[#1e222d] hover:bg-slate-200 dark:hover:bg-[#2a2e39] border border-slate-200 dark:border-[#2a2e39] rounded-lg transition-colors"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-slate-700 dark:text-[#d1d4dc] bg-slate-100 dark:bg-[#1e222d] hover:bg-slate-200 dark:hover:bg-[#2a2e39] border border-slate-200 dark:border-[#2a2e39] rounded-lg transition-colors cursor-pointer"
             >
               <Globe className="w-3.5 h-3.5 text-slate-500 dark:text-[#868993]" />
               <span className="font-semibold">{selectedRegion}</span>
@@ -140,7 +192,7 @@ export const Header: React.FC<HeaderProps> = ({
                         setSelectedRegion(reg.code);
                         setShowRegionMenu(false);
                       }}
-                      className={`w-full text-left px-3 py-2 text-xs rounded-lg transition-colors flex items-center justify-between ${
+                      className={`w-full text-left px-3 py-2 text-xs rounded-lg transition-colors flex items-center justify-between cursor-pointer ${
                         selectedRegion === reg.code
                           ? 'bg-[#2962ff]/10 text-[#2962ff] font-semibold'
                           : 'text-slate-700 dark:text-[#d1d4dc] hover:bg-slate-100 dark:hover:bg-[#2a2e39]'
@@ -160,17 +212,16 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Theme Toggle */}
           <button
             onClick={toggleTheme}
-            className="p-2 text-slate-600 dark:text-[#868993] hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-[#1e222d] hover:bg-slate-200 dark:hover:bg-[#2a2e39] border border-slate-200 dark:border-[#2a2e39] rounded-lg transition-colors"
+            className="p-2 text-slate-600 dark:text-[#868993] hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-[#1e222d] hover:bg-slate-200 dark:hover:bg-[#2a2e39] border border-slate-200 dark:border-[#2a2e39] rounded-lg transition-colors cursor-pointer"
             title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-            aria-label="Toggle theme"
           >
             {isDarkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-600" />}
           </button>
 
-          {/* Watchlist Drawer Toggle */}
+          {/* Watchlist Toggle */}
           <button
             onClick={onToggleWatchlist}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-[#2962ff] hover:bg-[#1e53e5] rounded-lg transition-colors whitespace-nowrap shadow-sm shadow-[#2962ff]/30 cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-[#2962ff] hover:bg-[#1e53e5] rounded-lg transition-colors whitespace-nowrap shadow-sm shadow-[#2962ff]/30 cursor-pointer"
           >
             <Bookmark className="w-3.5 h-3.5" />
             <span className="hidden md:inline">Watchlist</span>

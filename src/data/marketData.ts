@@ -1,23 +1,36 @@
-import { MarketAsset, SectorItem, EconomicEvent, MarketNews, TradeIdea, MarketOverviewData, CandleData } from '../types/market';
+import {
+  MarketAsset,
+  SectorItem,
+  EconomicEvent,
+  MarketNews,
+  TradeIdea,
+  MarketOverviewData,
+  CandleData,
+  OrderBook,
+  SectorPerformance,
+  EarningsItem
+} from '../types/market';
 
-// Helper to generate realistic candle data for any asset
-export function generateCandles(basePrice: number, count: number = 40, volatility: number = 0.015): CandleData[] {
+// Generate authentic OHLCV candle data
+export function generateCandles(basePrice: number, count: number = 45, volatility: number = 0.015): CandleData[] {
   const candles: CandleData[] = [];
-  let current = basePrice * (1 - volatility * (count / 2) * 0.3);
+  let current = basePrice * (1 - volatility * (count / 2) * 0.28);
   const now = Date.now();
   const dayMs = 24 * 60 * 60 * 1000;
 
   for (let i = count; i >= 0; i--) {
-    const time = new Date(now - i * dayMs).toISOString().split('T')[0];
-    const change = (Math.random() - 0.48) * current * volatility;
+    const timestamp = now - i * dayMs;
+    const time = new Date(timestamp).toISOString().split('T')[0];
+    const change = (Math.random() - 0.485) * current * volatility;
     const open = current;
-    const close = Math.max(open + change, current * 0.8);
-    const high = Math.max(open, close) + Math.random() * current * volatility * 0.8;
-    const low = Math.min(open, close) - Math.random() * current * volatility * 0.8;
-    const volume = Math.floor(Math.random() * 50000000 + 10000000);
+    const close = Math.max(open + change, current * 0.7);
+    const high = Math.max(open, close) + Math.random() * current * volatility * 0.75;
+    const low = Math.min(open, close) - Math.random() * current * volatility * 0.75;
+    const volume = Math.floor(Math.random() * 45000000 + 12000000);
 
     candles.push({
       time,
+      timestamp,
       open: Number(open.toFixed(2)),
       high: Number(high.toFixed(2)),
       low: Number(low.toFixed(2)),
@@ -28,6 +41,33 @@ export function generateCandles(basePrice: number, count: number = 40, volatilit
     current = close;
   }
   return candles;
+}
+
+// Generate realistic Level 2 Order Book (DOM)
+export function generateOrderBook(midPrice: number): OrderBook {
+  const depth = 8;
+  const tick = midPrice > 500 ? 0.5 : midPrice > 50 ? 0.05 : 0.01;
+  const spread = tick * 2;
+
+  const bids = [];
+  let cumBid = 0;
+  for (let i = 0; i < depth; i++) {
+    const price = Number((midPrice - spread / 2 - i * tick).toFixed(2));
+    const size = Math.floor(Math.random() * 400 + 150) * (i === 2 ? 3 : 1);
+    cumBid += size;
+    bids.push({ price, size, total: cumBid });
+  }
+
+  const asks = [];
+  let cumAsk = 0;
+  for (let i = 0; i < depth; i++) {
+    const price = Number((midPrice + spread / 2 + i * tick).toFixed(2));
+    const size = Math.floor(Math.random() * 400 + 150) * (i === 1 ? 2.5 : 1);
+    cumAsk += size;
+    asks.push({ price, size, total: cumAsk });
+  }
+
+  return { bids, asks, spread: Number(spread.toFixed(3)) };
 }
 
 export const GLOBAL_INDICES: MarketAsset[] = [
@@ -45,6 +85,9 @@ export const GLOBAL_INDICES: MarketAsset[] = [
     low52w: 4682.1,
     volume: '2.84B',
     technicalRating: 'Strong Buy',
+    perf1W: 1.45,
+    perf1M: 3.82,
+    perfYTD: 22.4,
   },
   {
     symbol: 'NDX',
@@ -60,6 +103,9 @@ export const GLOBAL_INDICES: MarketAsset[] = [
     low52w: 15720.0,
     volume: '4.12B',
     technicalRating: 'Strong Buy',
+    perf1W: 1.88,
+    perf1M: 4.65,
+    perfYTD: 26.8,
   },
   {
     symbol: 'DJI',
@@ -75,6 +121,9 @@ export const GLOBAL_INDICES: MarketAsset[] = [
     low52w: 37122.0,
     volume: '340M',
     technicalRating: 'Buy',
+    perf1W: 0.65,
+    perf1M: 2.10,
+    perfYTD: 14.9,
   },
   {
     symbol: 'RUT',
@@ -90,6 +139,9 @@ export const GLOBAL_INDICES: MarketAsset[] = [
     low52w: 1740.0,
     volume: '1.2B',
     technicalRating: 'Neutral',
+    perf1W: -0.32,
+    perf1M: 1.15,
+    perfYTD: 11.2,
   },
   {
     symbol: 'DAX',
@@ -105,6 +157,9 @@ export const GLOBAL_INDICES: MarketAsset[] = [
     low52w: 15600.0,
     volume: '68M',
     technicalRating: 'Buy',
+    perf1W: 0.82,
+    perf1M: 2.40,
+    perfYTD: 16.2,
   },
   {
     symbol: 'FTSE',
@@ -120,6 +175,9 @@ export const GLOBAL_INDICES: MarketAsset[] = [
     low52w: 7400.0,
     volume: '710M',
     technicalRating: 'Neutral',
+    perf1W: -0.45,
+    perf1M: -0.12,
+    perfYTD: 7.1,
   },
   {
     symbol: 'N225',
@@ -135,6 +193,9 @@ export const GLOBAL_INDICES: MarketAsset[] = [
     low52w: 30500.0,
     volume: '1.4B',
     technicalRating: 'Buy',
+    perf1W: 2.10,
+    perf1M: 4.80,
+    perfYTD: 18.5,
   },
   {
     symbol: 'HSI',
@@ -150,6 +211,9 @@ export const GLOBAL_INDICES: MarketAsset[] = [
     low52w: 14794.0,
     volume: '2.1B',
     technicalRating: 'Neutral',
+    perf1W: -1.80,
+    perf1M: 12.4,
+    perfYTD: 21.0,
   },
 ];
 
@@ -172,6 +236,9 @@ export const TOP_STOCKS: MarketAsset[] = [
     dayHigh: 142.20,
     dayLow: 137.10,
     technicalRating: 'Strong Buy',
+    perf1W: 4.8,
+    perf1M: 18.2,
+    perfYTD: 188.5,
     sparkline: [136.2, 137.5, 138.8, 139.4, 140.8, 141.54],
   },
   {
@@ -192,6 +259,9 @@ export const TOP_STOCKS: MarketAsset[] = [
     dayHigh: 232.50,
     dayLow: 229.80,
     technicalRating: 'Buy',
+    perf1W: 1.2,
+    perf1M: 4.1,
+    perfYTD: 23.4,
     sparkline: [229.5, 230.1, 230.9, 231.2, 231.78],
   },
   {
@@ -212,6 +282,9 @@ export const TOP_STOCKS: MarketAsset[] = [
     dayHigh: 420.00,
     dayLow: 415.60,
     technicalRating: 'Buy',
+    perf1W: 0.9,
+    perf1M: -0.8,
+    perfYTD: 14.2,
     sparkline: [415.0, 416.2, 417.0, 417.8, 418.15],
   },
   {
@@ -232,6 +305,9 @@ export const TOP_STOCKS: MarketAsset[] = [
     dayHigh: 167.10,
     dayLow: 164.20,
     technicalRating: 'Buy',
+    perf1W: 2.4,
+    perf1M: 3.5,
+    perfYTD: 19.8,
     sparkline: [164.0, 164.8, 165.5, 166.42],
   },
   {
@@ -252,6 +328,9 @@ export const TOP_STOCKS: MarketAsset[] = [
     dayHigh: 188.50,
     dayLow: 185.70,
     technicalRating: 'Strong Buy',
+    perf1W: 3.1,
+    perf1M: 5.6,
+    perfYTD: 24.5,
     sparkline: [185.0, 186.2, 187.1, 187.89],
   },
   {
@@ -272,6 +351,9 @@ export const TOP_STOCKS: MarketAsset[] = [
     dayHigh: 224.50,
     dayLow: 217.80,
     technicalRating: 'Neutral',
+    perf1W: -3.8,
+    perf1M: -9.5,
+    perfYTD: -11.2,
     sparkline: [225.0, 223.4, 221.0, 219.12],
   },
   {
@@ -292,6 +374,9 @@ export const TOP_STOCKS: MarketAsset[] = [
     dayHigh: 44.20,
     dayLow: 41.50,
     technicalRating: 'Strong Buy',
+    perf1W: 8.4,
+    perf1M: 28.6,
+    perfYTD: 154.2,
     sparkline: [41.2, 42.1, 42.9, 43.85],
   },
   {
@@ -312,6 +397,9 @@ export const TOP_STOCKS: MarketAsset[] = [
     dayHigh: 49.00,
     dayLow: 43.90,
     technicalRating: 'Buy',
+    perf1W: 12.1,
+    perf1M: -14.2,
+    perfYTD: 68.4,
     sparkline: [44.0, 45.2, 46.8, 48.2],
   },
   {
@@ -332,6 +420,9 @@ export const TOP_STOCKS: MarketAsset[] = [
     dayHigh: 159.20,
     dayLow: 155.10,
     technicalRating: 'Neutral',
+    perf1W: -1.4,
+    perf1M: 1.8,
+    perfYTD: 6.8,
     sparkline: [159.0, 158.1, 156.8, 156.4],
   },
   {
@@ -352,6 +443,9 @@ export const TOP_STOCKS: MarketAsset[] = [
     dayHigh: 906.00,
     dayLow: 889.50,
     technicalRating: 'Strong Buy',
+    perf1W: 2.8,
+    perf1M: 6.4,
+    perfYTD: 54.8,
     sparkline: [887.0, 891.0, 898.0, 902.5],
   },
   {
@@ -372,6 +466,9 @@ export const TOP_STOCKS: MarketAsset[] = [
     dayHigh: 223.50,
     dayLow: 220.90,
     technicalRating: 'Buy',
+    perf1W: 1.1,
+    perf1M: 5.2,
+    perfYTD: 31.4,
     sparkline: [221.0, 221.9, 222.84],
   },
   {
@@ -392,6 +489,9 @@ export const TOP_STOCKS: MarketAsset[] = [
     dayHigh: 23.40,
     dayLow: 22.10,
     technicalRating: 'Strong Sell',
+    perf1W: -5.4,
+    perf1M: -8.9,
+    perfYTD: -54.2,
     sparkline: [23.4, 23.0, 22.7, 22.45],
   },
 ];
@@ -413,6 +513,9 @@ export const CRYPTO_ASSETS: MarketAsset[] = [
     dayHigh: 68900.0,
     dayLow: 66800.0,
     technicalRating: 'Strong Buy',
+    perf1W: 6.2,
+    perf1M: 14.8,
+    perfYTD: 62.4,
     sparkline: [66800, 67100, 67450, 67900, 68150, 68420.5],
   },
   {
@@ -431,6 +534,9 @@ export const CRYPTO_ASSETS: MarketAsset[] = [
     dayHigh: 2680.0,
     dayLow: 2580.0,
     technicalRating: 'Buy',
+    perf1W: 3.4,
+    perf1M: 8.5,
+    perfYTD: 16.2,
     sparkline: [2590, 2605, 2620, 2635, 2645.1],
   },
   {
@@ -449,6 +555,9 @@ export const CRYPTO_ASSETS: MarketAsset[] = [
     dayHigh: 176.50,
     dayLow: 165.20,
     technicalRating: 'Strong Buy',
+    perf1W: 14.2,
+    perf1M: 28.4,
+    perfYTD: 72.8,
     sparkline: [165, 168, 171, 173, 174.85],
   },
   {
@@ -467,6 +576,9 @@ export const CRYPTO_ASSETS: MarketAsset[] = [
     dayHigh: 604.00,
     dayLow: 592.00,
     technicalRating: 'Buy',
+    perf1W: 1.8,
+    perf1M: 4.2,
+    perfYTD: 92.5,
     sparkline: [594, 595, 597, 598.2],
   },
   {
@@ -485,6 +597,9 @@ export const CRYPTO_ASSETS: MarketAsset[] = [
     dayHigh: 0.555,
     dayLow: 0.535,
     technicalRating: 'Neutral',
+    perf1W: 2.1,
+    perf1M: -3.4,
+    perfYTD: -11.5,
     sparkline: [0.535, 0.540, 0.544, 0.548],
   },
   {
@@ -503,6 +618,9 @@ export const CRYPTO_ASSETS: MarketAsset[] = [
     dayHigh: 0.146,
     dayLow: 0.132,
     technicalRating: 'Strong Buy',
+    perf1W: 18.5,
+    perf1M: 32.1,
+    perfYTD: 58.2,
     sparkline: [0.132, 0.136, 0.139, 0.1425],
   },
 ];
@@ -523,6 +641,9 @@ export const FOREX_PAIRS: MarketAsset[] = [
     dayHigh: 1.0855,
     dayLow: 1.0815,
     technicalRating: 'Sell',
+    perf1W: -0.45,
+    perf1M: -1.82,
+    perfYTD: -2.1,
     sparkline: [1.0845, 1.0838, 1.0830, 1.0824],
   },
   {
@@ -540,6 +661,9 @@ export const FOREX_PAIRS: MarketAsset[] = [
     dayHigh: 1.3020,
     dayLow: 1.2970,
     technicalRating: 'Neutral',
+    perf1W: -0.65,
+    perf1M: -2.10,
+    perfYTD: 2.1,
     sparkline: [1.301, 1.300, 1.299, 1.2985],
   },
   {
@@ -557,6 +681,9 @@ export const FOREX_PAIRS: MarketAsset[] = [
     dayHigh: 152.80,
     dayLow: 151.70,
     technicalRating: 'Strong Buy',
+    perf1W: 1.2,
+    perf1M: 5.8,
+    perfYTD: 8.2,
     sparkline: [151.8, 152.0, 152.2, 152.45],
   },
   {
@@ -574,6 +701,9 @@ export const FOREX_PAIRS: MarketAsset[] = [
     dayHigh: 0.8680,
     dayLow: 0.8645,
     technicalRating: 'Buy',
+    perf1W: 0.5,
+    perf1M: 2.4,
+    perfYTD: 2.8,
     sparkline: [0.865, 0.8658, 0.8662, 0.8665],
   },
   {
@@ -591,6 +721,9 @@ export const FOREX_PAIRS: MarketAsset[] = [
     dayHigh: 0.6675,
     dayLow: 0.6620,
     technicalRating: 'Sell',
+    perf1W: -0.85,
+    perf1M: -3.10,
+    perfYTD: -2.8,
     sparkline: [0.6668, 0.6655, 0.6642, 0.6635],
   },
   {
@@ -608,6 +741,9 @@ export const FOREX_PAIRS: MarketAsset[] = [
     dayHigh: 1.3860,
     dayLow: 1.3815,
     technicalRating: 'Buy',
+    perf1W: 0.6,
+    perf1M: 2.8,
+    perfYTD: 4.5,
     sparkline: [1.382, 1.383, 1.3835, 1.3842],
   },
 ];
@@ -628,6 +764,9 @@ export const COMMODITIES_FUTURES: MarketAsset[] = [
     low52w: 65.27,
     volume: '240K',
     technicalRating: 'Buy',
+    perf1W: 2.4,
+    perf1M: -1.2,
+    perfYTD: 0.8,
     sparkline: [70.2, 70.8, 71.1, 71.48],
   },
   {
@@ -645,6 +784,9 @@ export const COMMODITIES_FUTURES: MarketAsset[] = [
     low52w: 1980.00,
     volume: '185K',
     technicalRating: 'Strong Buy',
+    perf1W: 1.8,
+    perf1M: 5.4,
+    perfYTD: 33.2,
     sparkline: [2734, 2739, 2744, 2748.9],
   },
   {
@@ -662,6 +804,9 @@ export const COMMODITIES_FUTURES: MarketAsset[] = [
     low52w: 21.90,
     volume: '88K',
     technicalRating: 'Strong Buy',
+    perf1W: 3.2,
+    perf1M: 11.2,
+    perfYTD: 42.5,
     sparkline: [33.3, 33.5, 33.7, 33.85],
   },
   {
@@ -679,6 +824,9 @@ export const COMMODITIES_FUTURES: MarketAsset[] = [
     low52w: 1.52,
     volume: '110K',
     technicalRating: 'Sell',
+    perf1W: -4.5,
+    perf1M: -9.8,
+    perfYTD: -12.4,
     sparkline: [2.42, 2.39, 2.36, 2.34],
   },
   {
@@ -696,6 +844,9 @@ export const COMMODITIES_FUTURES: MarketAsset[] = [
     low52w: 3.65,
     volume: '65K',
     technicalRating: 'Buy',
+    perf1W: 1.1,
+    perf1M: 3.4,
+    perfYTD: 12.8,
     sparkline: [4.32, 4.35, 4.37, 4.38],
   },
 ];
@@ -781,6 +932,31 @@ export const BONDS_DATA: MarketAsset[] = [
     technicalRating: 'Buy',
     sparkline: [4.20, 4.21, 4.22, 4.23],
   },
+];
+
+// GICS 11 Sectors Performance Matrix
+export const GICS_SECTORS: SectorPerformance[] = [
+  { name: 'Information Technology', code: 'XLK', d1: 1.84, w1: 3.42, m1: 7.15, m3: 14.8, ytd: 31.4, topStock: 'NVDA' },
+  { name: 'Communication Services', code: 'XLC', d1: 1.25, w1: 2.80, m1: 5.40, m3: 12.1, ytd: 27.6, topStock: 'GOOGL' },
+  { name: 'Financials', code: 'XLF', d1: 0.68, w1: 1.15, m1: 4.20, m3: 9.8, ytd: 22.1, topStock: 'JPM' },
+  { name: 'Consumer Discretionary', code: 'XLY', d1: 0.42, w1: 0.95, m1: 2.80, m3: 6.4, ytd: 15.2, topStock: 'AMZN' },
+  { name: 'Healthcare', code: 'XLV', d1: 0.35, w1: -0.25, m1: 1.40, m3: 4.2, ytd: 12.5, topStock: 'LLY' },
+  { name: 'Industrials', code: 'XLI', d1: 0.55, w1: 1.40, m1: 3.10, m3: 8.5, ytd: 19.8, topStock: 'CAT' },
+  { name: 'Energy', code: 'XLE', d1: 1.45, w1: 2.10, m1: -1.20, m3: -3.4, ytd: 6.4, topStock: 'XOM' },
+  { name: 'Utilities', code: 'XLU', d1: -0.22, w1: 0.40, m1: 2.80, m3: 7.1, ytd: 24.2, topStock: 'NEE' },
+  { name: 'Materials', code: 'XLB', d1: 0.38, w1: 0.85, m1: 1.10, m3: 3.8, ytd: 10.4, topStock: 'LIN' },
+  { name: 'Consumer Staples', code: 'XLP', d1: 0.15, w1: -0.40, m1: 0.80, m3: 2.4, ytd: 13.8, topStock: 'PG' },
+  { name: 'Real Estate', code: 'XLRE', d1: -0.45, w1: -1.10, m1: -0.40, m3: 4.8, ytd: 8.2, topStock: 'PLD' },
+];
+
+// Wall Street Earnings Calendar
+export const EARNINGS_CALENDAR: EarningsItem[] = [
+  { id: 'e1', symbol: 'NVDA', name: 'NVIDIA Corp', date: 'Nov 20, 2024', time: 'AMC', epsEstimated: 0.74, epsReported: 0.81, revenueEst: '$32.8B', surprise: 9.4 },
+  { id: 'e2', symbol: 'AAPL', name: 'Apple Inc', date: 'Oct 31, 2024', time: 'AMC', epsEstimated: 1.60, epsReported: 1.64, revenueEst: '$94.9B', surprise: 2.5 },
+  { id: 'e3', symbol: 'MSFT', name: 'Microsoft Corp', date: 'Oct 30, 2024', time: 'AMC', epsEstimated: 3.10, epsReported: 3.30, revenueEst: '$65.6B', surprise: 6.5 },
+  { id: 'e4', symbol: 'AMZN', name: 'Amazon.com Inc', date: 'Oct 31, 2024', time: 'AMC', epsEstimated: 1.14, epsReported: 1.43, revenueEst: '$158.9B', surprise: 25.4 },
+  { id: 'e5', symbol: 'TSLA', name: 'Tesla Inc', date: 'Oct 23, 2024', time: 'AMC', epsEstimated: 0.58, epsReported: 0.72, revenueEst: '$25.2B', surprise: 24.1 },
+  { id: 'e6', symbol: 'PLTR', name: 'Palantir Tech', date: 'Nov 04, 2024', time: 'AMC', epsEstimated: 0.09, epsReported: 0.10, revenueEst: '$725M', surprise: 11.1 },
 ];
 
 export const SECTOR_HEATMAP: SectorItem[] = [
@@ -967,7 +1143,7 @@ export const TRADE_IDEAS: TradeIdea[] = [
     timeframe: '4H',
     likes: 428,
     comments: 54,
-    previewUrl: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=400&q=80',
+    previewUrl: '',
     description: 'Breakout above $140 consolidation with target projection towards $155 Fibonacci extension level. Clear invalidation stop below $135.50.',
   },
   {
@@ -979,7 +1155,7 @@ export const TRADE_IDEAS: TradeIdea[] = [
     timeframe: '1D',
     likes: 890,
     comments: 112,
-    previewUrl: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=400&q=80',
+    previewUrl: '',
     description: 'Wave 4 corrective flat appears completed at the 0.382 retracement. Volume profiles show strong accumulation in the $65K-$67K pocket.',
   },
   {
@@ -991,7 +1167,7 @@ export const TRADE_IDEAS: TradeIdea[] = [
     timeframe: 'Daily',
     likes: 312,
     comments: 29,
-    previewUrl: 'https://images.unsplash.com/photo-1642543492481-44e81e3914a7?auto=format&fit=crop&w=400&q=80',
+    previewUrl: '',
     description: 'Divergence between Fed policy path and ECB rate cutting cycle favors persistent USD strength into year-end.',
   },
 ];
@@ -1012,5 +1188,6 @@ export const MARKET_OVERVIEW_DATA: MarketOverviewData = {
     us10yChange: 0.03,
     vixIndex: 15.24,
     vixChange: -0.42,
+    sp500Breadth: 68.4,
   },
 };

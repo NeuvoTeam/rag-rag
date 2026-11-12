@@ -1,7 +1,17 @@
-export type AssetClass = 'overview' | 'stocks' | 'crypto' | 'forex' | 'indices' | 'futures' | 'bonds' | 'heatmap';
+export type AssetClass =
+  | 'overview'
+  | 'stocks'
+  | 'crypto'
+  | 'forex'
+  | 'indices'
+  | 'futures'
+  | 'bonds'
+  | 'heatmap'
+  | 'multichart';
 
 export interface CandleData {
   time: string;
+  timestamp: number;
   open: number;
   high: number;
   low: number;
@@ -28,10 +38,80 @@ export interface MarketAsset {
   dayLow?: number;
   technicalRating?: 'Strong Buy' | 'Buy' | 'Neutral' | 'Sell' | 'Strong Sell';
   sector?: string;
-  spread?: number; // For forex
+  spread?: number;
   bid?: number;
   ask?: number;
-  history?: CandleData[];
+  perf1W?: number;
+  perf1M?: number;
+  perfYTD?: number;
+}
+
+export interface OrderBookEntry {
+  price: number;
+  size: number;
+  total: number;
+}
+
+export interface OrderBook {
+  bids: OrderBookEntry[];
+  asks: OrderBookEntry[];
+  spread: number;
+}
+
+export interface Position {
+  id: string;
+  symbol: string;
+  name: string;
+  side: 'BUY' | 'SELL';
+  quantity: number;
+  entryPrice: number;
+  currentPrice: number;
+  pnl: number;
+  pnlPercent: number;
+  openTime: string;
+}
+
+export interface PriceAlert {
+  id: string;
+  symbol: string;
+  targetPrice: number;
+  condition: 'CROSSES_ABOVE' | 'CROSSES_BELOW';
+  createdAt: string;
+  triggered: boolean;
+}
+
+export interface EarningsItem {
+  id: string;
+  symbol: string;
+  name: string;
+  date: string;
+  time: 'BMO' | 'AMC'; // Before Market Open / After Market Close
+  epsEstimated: number;
+  epsReported?: number;
+  revenueEst: string;
+  surprise?: number;
+}
+
+export interface SectorPerformance {
+  name: string;
+  code: string;
+  d1: number;
+  w1: number;
+  m1: number;
+  m3: number;
+  ytd: number;
+  topStock: string;
+}
+
+export interface DrawingElement {
+  id: string;
+  type: 'line' | 'horizontal' | 'fibonacci' | 'text';
+  startX: number;
+  startY: number;
+  endX?: number;
+  endY?: number;
+  label?: string;
+  price?: number;
 }
 
 export interface SectorItem {
@@ -44,7 +124,7 @@ export interface SectorItem {
     name: string;
     price: number;
     changePercent: number;
-    weight: number; // For relative sizing in treemap
+    weight: number;
     marketCap: string;
   }[];
 }
@@ -101,5 +181,6 @@ export interface MarketOverviewData {
     us10yChange: number;
     vixIndex: number;
     vixChange: number;
+    sp500Breadth: number; // % above 200 SMA
   };
 }

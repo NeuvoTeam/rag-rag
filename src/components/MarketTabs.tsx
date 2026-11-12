@@ -1,6 +1,6 @@
 import React from 'react';
 import { AssetClass } from '../types/market';
-import { LayoutGrid, BarChart2, Bitcoin, DollarSign, Activity, Flame, ShieldAlert, Grid } from 'lucide-react';
+import { LayoutGrid, BarChart2, Bitcoin, DollarSign, Activity, Flame, ShieldAlert, Grid, Columns } from 'lucide-react';
 
 interface MarketTabsProps {
   activeTab: AssetClass;
@@ -11,6 +11,7 @@ export const MarketTabs: React.FC<MarketTabsProps> = ({ activeTab, setActiveTab 
   const tabs: { id: AssetClass; label: string; icon: React.ReactNode }[] = [
     { id: 'overview', label: 'Overview', icon: <LayoutGrid className="w-4 h-4" /> },
     { id: 'stocks', label: 'Stocks', icon: <BarChart2 className="w-4 h-4" /> },
+    { id: 'multichart', label: 'Multi-Chart', icon: <Columns className="w-4 h-4" /> },
     { id: 'crypto', label: 'Crypto', icon: <Bitcoin className="w-4 h-4" /> },
     { id: 'forex', label: 'Forex', icon: <DollarSign className="w-4 h-4" /> },
     { id: 'indices', label: 'Indices', icon: <Activity className="w-4 h-4" /> },
